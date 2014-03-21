@@ -1,0 +1,3 @@
+The purpose of this file is to provide a sample text file for line-wrapping testing in the Java application that I'm building.  Its purpose is to test management in both a StringBuffer and array of StringBuffers.
+
+The copy of the original testing line file was left at work and the original lost when my PC died an ignominious death because of an interrupt issue with the video card.
