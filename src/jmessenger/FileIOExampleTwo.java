@@ -65,8 +65,8 @@ public class FileIOExampleTwo
 		int c;
 
 		// Define File(s).
-	  File inFile  = new File("AVerseText.txt");
-	  File outFile = new File("AVerseCopy.txt");
+	  File inFile  = new File("jmessenger/AVerseText.txt");
+	  File outFile = new File("jmessenger/AVerseCopy.txt");
           FileWriter out;
       try (FileReader in = new FileReader(inFile)) {
           out = new FileWriter(outFile);

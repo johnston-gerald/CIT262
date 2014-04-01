@@ -71,47 +71,36 @@ public class JMessagingFrame extends JFrame {
   // ---------------------------------/
 
   // Define JButton(s).
-  private JButton sendButton;
-  private JButton receiveButton;
-  private JButton JDBCButton;
-  private JButton fileButton;
-  private JButton rSendButton;
-  private JButton rReceiveButton;
+  private JButton pushButton;
+  private JButton pullButton;
 
   // Menu bar.
   private final JMenuBar menuBar = new JMenuBar();
 
   // Menus.
-  private final JMenu file = new JMenu("File");
-  private final JMenu comm = new JMenu("Communicate");
-  private final JMenu data = new JMenu("Database");
-  private final JMenu help = new JMenu("Help");
+  private final JMenu file     = new JMenu("File");
+  private final JMenu settings = new JMenu("Settings");
+  private final JMenu help     = new JMenu("Help");
+
 
   // Menu items.
-  private final JMenuItem menuItemNew     = new JMenuItem("New");
-  private final JMenuItem menuItemOpen    = new JMenuItem("Open");
-  private final JMenuItem menuItemClose   = new JMenuItem("Close");
-  private final JMenuItem menuItemSave    = new JMenuItem("Save");
-  private final JMenuItem menuItemSaveAs  = new JMenuItem("Save As");
-  private final JMenuItem menuItemSend    = new JMenuItem("Send");
-  private final JMenuItem menuItemReceive = new JMenuItem("Receive");
-  private final JMenuItem menuItemConnect = new JMenuItem("Connect");
-  private final JMenuItem menuItemSubmit  = new JMenuItem("Run SQL");
-  private final JMenuItem menuItemExit    = new JMenuItem("Exit");
-  private final JMenuItem menuItemHelp    = new JMenuItem("About");
-
-  // Checkbox menu items.
-  private final JCheckBoxMenuItem menuCheckBoxItemDebug =
-                              new JCheckBoxMenuItem("Debug");
+  private final JMenuItem menuItemOpen       = new JMenuItem("Open");
+  private final JMenuItem menuItemSave       = new JMenuItem("Save");
+  private final JMenuItem menuItemSettings   = new JMenuItem("Connection Settings");
+  private final JMenuItem menuItemHelp       = new JMenuItem("About");
 
   // Define JScrollPane(s).
-  private JScrollPane senderScrollPane;
-  private JScrollPane receiverScrollPane;
+  private JScrollPane scrollPane;
 
   // Define a JTextAreaPanel(s).
-  private JTextAreaPanel receiver;
-  private JButtonPanel button;
-  private JTextAreaPanel sender;
+  private JTextAreaPanel content;
+  private JButtonPanel   buttonPanel;
+
+  private final Settings mSettings = new Settings();
+  
+  // Used to actually connect to database 
+  private String mUrl      = new String();
+  private String mPassword = new String();
 
   // ------------------------- Begin Constructor -----------------------------/
 
@@ -177,16 +166,10 @@ public class JMessagingFrame extends JFrame {
   // ------------------- API Component Accessor Methods ----------------------/
 
   // Build JButtons.
-  protected void buildButtons()
-  {
+  protected void buildButtons() {
     // Define and initialize JButton(s).
-    sendButton     = button.getButton("Send");
-    receiveButton  = button.getButton("Receive");
-    JDBCButton     = button.getButton("Connect");
-    fileButton     = button.getButton("Query");
-    rSendButton    = button.getButton("rSend");
-    rReceiveButton = button.getButton("rReceive");
-
+    pushButton = buttonPanel.getButton("Push");
+    pullButton = buttonPanel.getButton("Pull");
   } // End of setMessage() method.
 
   // -------------------------------------------------------------------------/
@@ -197,91 +180,35 @@ public class JMessagingFrame extends JFrame {
     /*
     || Section adds action listeners for buttons:
     || ==========================================
-    ||  - sendButton
-    ||  - receiveButton
-    ||  - JDBCButton
-    ||  - fileButton
-    ||  - rSendButton
-    ||  - rReceiveButton
+    ||  - pushButton
+    ||  - pullButton
     */
 
     // Send button.
-    sendButton.addActionListener(
+    pushButton.addActionListener(
       new ActionListener()
       {
         @Override
         public void actionPerformed(ActionEvent e)
         {
           // Send message.
-          setMessage(sender,receiver);
+          setMessage(content, content);
 
         } // End of actionPerformed() method.
       }); // End of sendButton action listener.
 
     // Receive button.
-    receiveButton.addActionListener(
+    pullButton.addActionListener(
       new ActionListener()
       {
         @Override
         public void actionPerformed(ActionEvent e)
         {
           // Receive message.
-          getMessage(receiver);
+          getMessage(content);
 
         } // End of actionPerformed() method.
       }); // End of receiveButton action listener.
-
-    // JDBC button.
-    JDBCButton.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Print message until implemented.
-          System.out.println("Database Connection .... ");
-
-        } // End of actionPerformed() method.
-      }); // End of JDBCButton action listener.
-
-    // File button.
-    fileButton.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Print message until implemented.
-          System.out.println("SQL Submission .... ");
-
-        } // End of actionPerformed() method.
-      }); // End of fileButton action listener.
-
-    // Send button.
-    rSendButton.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Print message until implemented.
-          System.out.println("Remote Sending .... ");
-
-        } // End of actionPerformed() method.
-      }); // End of rSendButton action listener.
-
-    // Receive button.
-    rReceiveButton.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Print message until implemented.
-          System.out.println("Remote Receiving .... ");
-
-        } // End of actionPerformed() method.
-      }); // End of rReceiveButton action listener.
 
   } // End of buildButtonActionListeners() method.
 
@@ -292,18 +219,17 @@ public class JMessagingFrame extends JFrame {
   {
     // Set JFrame title.
     setTitle("Communicator");
+    
+    mSettings.init();
 
     // Initialize and set policies for JScrollPane(s).
-    receiverScrollPane = setScrollPaneProperties(new JScrollPane(
-			                     receiver = new JTextAreaPanel(COL,ROW)));
-    senderScrollPane   = setScrollPaneProperties(new JScrollPane(
-                           sender = new JTextAreaPanel(COL,ROW)));
+    scrollPane = setScrollPaneProperties(new JScrollPane(content = new JTextAreaPanel(COL,ROW)));
 
-    // Disable editability of receiver JTextAreaPanel.
-    receiver.setEditable(false);
+    // Enable editability of receiver JTextAreaPanel.
+    content.setEditable(true);
 
     // Initialize JButtonPanel.
-    button = new JButtonPanel();
+    buttonPanel = new JButtonPanel();
 
     // Define and initialize JButton(s).
     buildButtons();
@@ -315,9 +241,8 @@ public class JMessagingFrame extends JFrame {
     getContentPane().setLayout(new BorderLayout());
 
     // Add a JTextAreaPanel(s).
-    getContentPane().add(receiverScrollPane,BorderLayout.NORTH);
-    getContentPane().add(button,BorderLayout.CENTER);
-    getContentPane().add(senderScrollPane,BorderLayout.SOUTH);
+    getContentPane().add(scrollPane,BorderLayout.NORTH);
+    getContentPane().add(buttonPanel,BorderLayout.SOUTH);
 
     // Build JMenuBar.
     buildMenu();
@@ -359,58 +284,33 @@ public class JMessagingFrame extends JFrame {
   {
     // Add menus to the menu bar.
     menuBar.add(file);
-    menuBar.add(comm);
-    menuBar.add(data);
+    menuBar.add(settings);
     menuBar.add(help);
 
     // Set mnemonics for menu selections.
-    file.setMnemonic('F');
-    comm.setMnemonic('C');
-    data.setMnemonic('D');
-    help.setMnemonic('H');
+    file.setMnemonic    ('F');
+    settings.setMnemonic('S');
+    help.setMnemonic    ('H');
 
     // Menu items for file menu.
-    file.add(menuItemNew);
-    file.addSeparator();
     file.add(menuItemOpen);
-    file.add(menuItemClose);
     file.addSeparator();
     file.add(menuItemSave);
-    file.add(menuItemSaveAs);
-    file.addSeparator();
-    file.add(menuItemExit);
 
-    // Menu items for comm menu.
-    comm.add(menuItemSend);
-    comm.add(menuItemReceive);
-
-    // Menu items for comm menu.
-    data.add(menuItemConnect);
-    data.add(menuItemSubmit);
-
+    // Menu items for settings menu.
+    settings.add(menuItemSettings);
+    
     // Set mnemonics for menu item selections for file menu.
-    menuItemNew.setMnemonic('N');
     menuItemOpen.setMnemonic('O');
-    menuItemClose.setMnemonic('C');
     menuItemSave.setMnemonic('S');
-    menuItemSaveAs.setMnemonic('A');
-    menuItemExit.setMnemonic('X');
-
-    // Set mnemonics for comm item selections for file menu.
-    menuItemSend.setMnemonic('S');
-    menuItemReceive.setMnemonic('R');
 
     // Set mnemonics for data item selections for file menu.
-    menuItemConnect.setMnemonic('C');
-    menuItemSubmit.setMnemonic('R');
+    menuItemSettings.setMnemonic('C');
 
     // Menu items to help menu.
-    help.add(menuCheckBoxItemDebug);
-    help.addSeparator();
     help.add(menuItemHelp);
 
     // Set mnemonics for menu item selections for edit menu.
-    menuCheckBoxItemDebug.setMnemonic('D');
     menuItemHelp.setMnemonic('A');
 
     // Build menu action listeners.
@@ -447,18 +347,6 @@ public class JMessagingFrame extends JFrame {
     // Menu item listeners to file menu.
     // ---------------------------------/
 
-    menuItemNew.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // New file.
-          newFile();
-
-        } // End of actionPerformed method.
-      }); // End of menuItemNew action listener.
-
     menuItemOpen.addActionListener(
       new ActionListener()
       {
@@ -471,18 +359,6 @@ public class JMessagingFrame extends JFrame {
         } // End of actionPerformed method.
       }); // End of menuItemOpen action listener.
 
-    menuItemClose.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Close file.
-          closeFile();
-
-        } // End of actionPerformed method.
-      }); // End of menuItemClose action listener.
-
     menuItemSave.addActionListener(
       new ActionListener()
       {
@@ -490,106 +366,27 @@ public class JMessagingFrame extends JFrame {
         public void actionPerformed(ActionEvent e)
         {
           // Save current sender JTextAreaPanel String as current file.
-          saveFile();
+          saveAsFile();
 
         } // End of actionPerformed method.
       }); // End of menuItemSave action listener.
 
-    menuItemSaveAs.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Save current sender JTextAreaPanel String as new file.
-          saveAsFile();
-
-        } // End of actionPerformed method.
-      }); // End of menuItemSaveAs action listener.
-
-    menuItemExit.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Exit the system on menu exit.
-          System.exit(0);
-
-        } // End of actionPerformed() method.
-
-      }); // End of menuItemExit action listener.
-
-    menuItemSend.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Send message.
-          setMessage(sender,receiver);
-
-        } // End of actionPerformed() method.
-
-      }); // End of menuItemSend action listener.
-
-    menuItemReceive.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Receive message.
-          getMessage(receiver);
-
-        } // End of actionPerformed() method.
-
-      }); // End of menuItemReceive action listener.
-
-    menuItemConnect.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Functionality to be implemented.
-          System.out.println("This is future functionality to Connect to DB.");
-
-        } // End of actionPerformed() method.
-
-      }); // End of menuItemConnect action listener.
-
-    menuItemSubmit.addActionListener(
-      new ActionListener()
-      {
-        @Override
-        public void actionPerformed(ActionEvent e)
-        {
-          // Functionality to be implemented.
-          System.out.println("This is future functionality to Submit SQL.");
-
-        } // End of actionPerformed() method.
-
-      }); // End of menuItemSubmit action listener.
+    // ---------------------------------/
+    // Menu item listeners to settings menu.
+    // ---------------------------------/
+    
+    menuItemSettings.addActionListener(
+        new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mSettings.setVisible(true);
+            }
+        });
 
     // ---------------------------------/
     // Menu item listeners to help menu.
     // ---------------------------------/
-
-    // Add menu item listeners for debug check box menu item.
-    menuCheckBoxItemDebug.addItemListener(
-      new ItemListener()
-      {
-        @Override
-        public void itemStateChanged(ItemEvent e)
-        {
-          // Set stack trace enablement to opposite state.
-          setDebugEnabled(!getDebugEnabled());
-
-        } // End of actionPerformed method.
-
-      }); // End of menuCheckBoxItemDebug item listener.
-
+    
     // Add menu item action listener for help menu.
     menuItemHelp.addActionListener(
       new ActionListener()
@@ -610,16 +407,16 @@ public class JMessagingFrame extends JFrame {
   // Method to closeFile().
   private void closeFile()
   {
-    // Dismiss file reference.
-    fileName = new File("");
-
-    // If JTextAreaPanel contains text.
-    if (!sender.isTextAreaEmpty())
-    {
-      // Clear display area.
-      sender.replaceRange(null,0,sender.getText().length());
-
-    } // End of if check if JTextAreaPanel contains text.
+//    // Dismiss file reference.
+//    fileName = new File("");
+//
+//    // If JTextAreaPanel contains text.
+//    if (!sender.isTextAreaEmpty())
+//    {
+//      // Clear display area.
+//      sender.replaceRange(null,0,sender.getText().length());
+//
+//    } // End of if check if JTextAreaPanel contains text.
 
   } // End of closeFile() method.
 
@@ -719,16 +516,16 @@ public class JMessagingFrame extends JFrame {
       contents = FileIO.openFile(this,fileName);
 
       // Verify that the JTextAreaPanel is empty.
-      if (sender.isTextAreaEmpty())
+      if (content.isTextAreaEmpty())
       {
         // Set JTextAreaPanel.
-        sender.setText(contents);
+        content.setText(contents);
 
       } // End of if JTextAreaPanel is empty.
       else
       {
         // Reset JTextAreaPanel by replacing the range.
-        sender.replaceRange(contents,0,sender.getText().length());
+        content.replaceRange(contents,0,content.getText().length());
 
       } // End of else JTextAreaPanel is not empty.
 
@@ -764,7 +561,7 @@ public class JMessagingFrame extends JFrame {
       try
       {
         // Save file.
-        FileIO.saveFile(this,fileName,sender.getText());
+        FileIO.saveFile(this,fileName,content.getText());
 
       } // End of try to get message.
       catch (BufferEmptyException e)  // Catch InvalidFileReference.
@@ -794,7 +591,7 @@ public class JMessagingFrame extends JFrame {
       try
       {
         // Save file.
-        FileIO.saveFile(this,fileName,sender.getText());
+        FileIO.saveFile(this,fileName,content.getText());
 
       } // End of try to get message.
       catch (BufferEmptyException e)  // Catch InvalidFileReference.
@@ -1141,6 +938,91 @@ public class JMessagingFrame extends JFrame {
 
   // -------------------------- End Static Main ------------------------------/
 
+    /**
+    * Inner class settings brings up a menu to type in a url and password
+    * for a database to connect to
+    */
+  class Settings extends JFrame
+  {
+      /**
+       * Components to add to Settings menu
+       */
+      JLabel         mUrlLabel    = new JLabel("Database URL:");
+      JLabel         mPassLabel   = new JLabel("Password:");
+      JTextField     mUrlField    = new JTextField();
+      JPasswordField mPassField   = new JPasswordField();
+      JButton        mApplyButton = new JButton("Apply");
+      JPanel         mUrlArea     = new JPanel();
+      JPanel         mPassArea    = new JPanel();      
+
+      /**
+       * Initializes Frame
+       */
+      public void init()
+      {
+	  // Initialize components
+	  initApplyButton();
+	  initLayouts();
+	  // Set up Frame
+	  setTitle("Connection Settings");
+	  setResizable(false);
+	  setVisible(false);
+	  setSize(400, 300);
+	  // Set up main layout
+	  getContentPane().setLayout(new FlowLayout());
+	  getContentPane().add(mUrlArea);
+	  getContentPane().add(mPassArea);
+	  getContentPane().add(mApplyButton);
+
+      }
+
+      /**
+       * Set up layout and add components to JPanels
+       */
+      private void initLayouts()
+      {
+	  // Set up URL area
+	  mUrlArea.setLayout(new FlowLayout());
+	  mUrlArea.add(mUrlLabel);
+	  mUrlField.setPreferredSize(new Dimension(300, 26));
+	  mUrlArea.add(mUrlField);
+	  // Set up Password area
+	  mPassArea.setLayout(new FlowLayout());
+	  mPassArea.add(mPassLabel);
+	  mPassField.setPreferredSize(new Dimension(300, 26));
+	  mPassArea.add(mPassField);
+      }
+
+      /**
+       * Set up action listener for apply button
+       */
+      private void initApplyButton()
+      {
+	  mApplyButton.addActionListener(new ActionListener()
+	      {
+                  @Override
+		  public void actionPerformed(ActionEvent e)
+		  {
+		      apply();
+		      setVisible(false);
+		  }
+	      });
+      }
+
+      /**
+       * Gets the text from the textfields and stores them in
+       * memory as strings
+       */
+      private void apply()
+      {
+	  mUrl      = mUrlField .getText();
+	  mPassword = mPassField.getText();
+	  System.out.println(mUrl);
+	  System.out.println(mPassword);
+      }
+
+  }
+  
 } // End of JMessagingFrame class.
 
 // ------------------------------- End Class ---------------------------------/
