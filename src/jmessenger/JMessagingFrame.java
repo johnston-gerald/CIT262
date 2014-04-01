@@ -1016,7 +1016,7 @@ public class JMessagingFrame extends JFrame {
       private void apply()
       {
 	  mUrl      = mUrlField .getText();
-	  mPassword = mPassField.getText();
+	  mPassword = String.valueOf(mPassField.getPassword()); //changed deprecated getText to getPassword
 	  System.out.println(mUrl);
 	  System.out.println(mPassword);
       }
